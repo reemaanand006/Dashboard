@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash - Premium Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+            <i data-lucide="{% if category == 'success' %}check-circle{% else %}alert-circle{% endif %}" class="flash-icon"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-box">
+                    <i data-lucide="activity" class="logo-icon"></i>
+                </div>
+                <span class="logo-text">City Analytics</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">MAIN</div>
+                <a href="#" class="nav-item active">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i data-lucide="bar-chart-2"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </a>
+                <div class="nav-section">PREFERENCES</div>
+                <a href="#" class="nav-item">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="support-card">
+                    <i data-lucide="life-buoy"></i>
+                    <div>
+                        <h4>Need Help?</h4>
+                        <p>Check our docs</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-wrapper">
+            <!-- TOP NAVBAR -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <div>
+                        <h2 class="page-title">Dashboard Overview</h2>
+                        <p class="page-subtitle">Operational pulse across departments</p>
+                    </div>
+                </div>
+                <div class="navbar-right">
+                    {% if is_admin %}
+                    <button id="addRecordBtn" class="btn primary-btn btn-icon">
+                        <i data-lucide="plus"></i> Add Record
+                    </button>
+                    {% endif %}
+                    <button id="refreshBtn" class="icon-btn" title="Refresh Data">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
+                    
+                    <div class="nav-divider"></div>
+
+                    <div class="notification-container">
+                        <button class="icon-btn notification-btn">
+                            <i data-lucide="bell"></i>
+                            <span class="badge"></span>
+                        </button>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="avatar">
+                            {% if is_admin %}
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff&rounded=true" alt="Admin">
+                            {% else %}
+                            <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=64748b&rounded=true" alt="Guest">
+                            {% endif %}
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">{% if is_admin %}{{ admin_username }}{% else %}Guest{% endif %}</span>
+                            <span class="user-role">{% if is_admin %}Administrator{% else %}Viewer{% endif %}</span>
+                        </div>
+                        
+                        {% if is_admin %}
+                        <form action="{{ url_for('logout') }}" method="POST" class="auth-form">
+                            <button type="submit" class="icon-btn text-danger ml-2" title="Logout">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="btn secondary-btn btn-sm ml-2">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD CONTENT -->
+            <main class="dashboard-content">
+                <div class="content-header">
+                    <div>
+                        <h3 class="section-title">Performance Metrics</h3>
+                        <p class="section-subtitle">Real-time overview of your public service operations</p>
+                    </div>
+                    <div class="last-sync">
+                        <span class="status-indicator"></span>
+                        <span id="lastUpdated" class="last-updated-text">Live</span>
+                    </div>
+                </div>
+
+                <!-- ALERT BANNER -->
+                <div id="criticalAlerts" class="alert-banner" style="display: none;">
+                    <div class="alert-icon-wrap"><i data-lucide="alert-triangle"></i></div>
+                    <div class="alert-content">
+                        <strong>System Alerts:</strong> <span id="alertText"></span>
+                    </div>
+                </div>
+
+                <!-- KPI CARDS -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon-box bg-blue-100 text-blue-600">
+                            <i data-lucide="file-text"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-label">Total Requests</div>
+                            <div class="kpi-value" id="kpiTotalRequests">--</div>
+                        </div>
+                        <span class="kpi-badge">
+                            <i data-lucide="activity"></i> Live
+                        </span>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-box bg-green-100 text-green-600">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-label">Completed</div>
+                            <div class="kpi-value" id="kpiCompleted">--</div>
+                        </div>
+                        <span class="kpi-badge">
+                            <i data-lucide="trending-up"></i> Stable
+                        </span>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-box bg-orange-100 text-orange-600">
+                            <i data-lucide="clock"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-label">Pending</div>
+                            <div class="kpi-value" id="kpiPending">--</div>
+                        </div>
+                        <span class="kpi-badge">
+                            <i data-lucide="timer"></i> Queue
+                        </span>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-box bg-purple-100 text-purple-600">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <div class="kpi-label">Performance</div>
+                            <div class="kpi-value" id="kpiPerformance">--%</div>
+                        </div>
+                        <span class="kpi-badge">
+                            <i data-lucide="sparkles"></i> Quality
+                        </span>
+                    </div>
+                </div>
+
+                <!-- CHARTS ROW -->
+                <div class="charts-grid-row">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="card-header-icon">
+                                    <i data-lucide="layers"></i>
+                                </span>
+                                <div>
+                                    <h3 class="card-title">Backlog Analysis</h3>
+                                    <p class="card-subtitle">Top high-volume services</p>
+                                </div>
+                            </div>
+                            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="backlogChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="card-header-icon">
+                                    <i data-lucide="pie-chart"></i>
+                                </span>
+                                <div>
+                                    <h3 class="card-title">Dept Efficiency</h3>
+                                    <p class="card-subtitle">Department performance split</p>
+                                </div>
+                            </div>
+                            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="deptEfficiencyChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="card-header-icon">
+                                    <i data-lucide="trending-up"></i>
+                                </span>
+                                <div>
+                                    <h3 class="card-title">Satisfaction vs Time</h3>
+                                    <p class="card-subtitle">Delivery speed correlation</p>
+                                </div>
+                            </div>
+                            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="correlationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLE SECTION -->
+                <div class="card table-card mt-6">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="card-header-icon">
+                                <i data-lucide="table"></i>
+                            </span>
+                            <div>
+                                <h3 class="card-title">Recent Service Records</h3>
+                                <p class="card-subtitle">Latest operational entries</p>
+                            </div>
+                        </div>
+                        <div class="card-tools">
+                             <div class="search-box">
+                                 <i data-lucide="search"></i>
+                                 <input type="text" placeholder="Search records...">
+                             </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Service Name</th>
+                                    <th>Total Requests</th>
+                                    <th>Resolved</th>
+                                    <th>Efficiency</th>
+                                    <th>Rating</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody">
+                                {% for service in services %}
+                                <tr>
+                                    <td>
+                                        <div class="flex-align">
+                                            <span class="dept-dot {{ service['department'].lower().replace(' ', '-') }}"></span>
+                                            <span class="font-medium">{{ service['department'] }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ service['service'] }}</td>
+                                    <td>{{ service['total_requests'] }}</td>
+                                    <td>{{ service['resolved_requests'] }}</td>
+                                    <td>
+                                        {% set eff = (service['resolved_requests'] / service['total_requests'] * 100) if service['total_requests'] > 0 else 0 %}
+                                        <div class="progress-cell">
+                                            <span class="progress-text {% if eff > 80 %}text-success{% elif eff > 50 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ eff | round(0) | int }}%
+                                            </span>
+                                            <div class="progress-bar-bg">
+                                                <div class="progress-bar-fill {% if eff > 80 %}bg-success{% elif eff > 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ eff }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="rating-badge {% if service['satisfaction'] >= 4.0 %}high{% elif service['satisfaction'] >= 3.0 %}med{% else %}low{% endif %}">
+                                            <i data-lucide="star" class="star-icon"></i> {{ service['satisfaction'] }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if is_admin %}
+                                        <div class="action-cell">
+                                            <a href="{{ url_for('edit_service', id=service['id']) }}" class="action-btn edit-btn" title="Edit"><i data-lucide="edit-3"></i></a>
+                                            <form action="{{ url_for('delete_service', id=service['id']) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this record?');">
+                                                <button type="submit" class="action-btn delete-btn" title="Delete"><i data-lucide="trash-2"></i></button>
+                                            </form>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted text-sm">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL FORM -->
+    {% if is_admin %}
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Add Service Record</h2>
+                    <p class="modal-subtitle">Enter details for the new public service record</p>
+                </div>
+                <button id="closeModal" class="icon-btn-sm close-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <form action="/add" method="POST" class="modern-form">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Department</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="briefcase"></i>
+                                <select name="department" id="deptSelect" required onchange="updateServices()">
+                                    <option value="" disabled selected>Select Department</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Public Works">Public Works</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Type</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="layers"></i>
+                                <select name="service" id="serviceSelect" required>
+                                    <option value="" disabled selected>Select Service</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Requests Received</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="file-input"></i>
+                                <input type="number" name="total_requests" min="0" placeholder="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Requests Resolved</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="check-square"></i>
+                                <input type="number" name="resolved_requests" min="0" placeholder="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Avg Resolution Time (Hours)</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="clock"></i>
+                                <input type="number" step="0.1" name="resolution_time" placeholder="0.0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Citizen Satisfaction (1-5)</label>
+                            <div class="input-with-icon">
+                                <i data-lucide="smile"></i>
+                                <input type="number" step="0.1" min="1" max="5" name="satisfaction" placeholder="0.0" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn secondary-btn" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn primary-btn btn-icon"><i data-lucide="save"></i> Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Initialize lucide icons
+        lucide.createIcons();
+        
+        // Modal specific inline script
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        if (cancelModalBtn) {
+            cancelModalBtn.addEventListener('click', () => {
+                document.getElementById('addModal').classList.remove('active');
+            });
+        }
+    </script>
+</body>
+
+</html>

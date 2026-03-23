@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <h1>City Analytics Command Center</h1>
+                <p>Admin Authentication</p>
+            </div>
+            <div class="header-right">
+                <a href="{{ url_for('login') }}" class="btn secondary-btn">Secure Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="centered-container auth-container">
+            <h2>Admin Login</h2>
+            <form method="POST" class="professional-form" style="padding: 0;">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input id="username" type="text" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" name="password" required autocomplete="current-password">
+                </div>
+                <div class="form-actions" style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn primary-btn large-btn">Login</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>

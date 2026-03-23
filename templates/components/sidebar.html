@@ -1,0 +1,50 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <div class="logo-box">
+                <i data-lucide="activity" class="logo-icon"></i>
+            </div>
+            <span class="logo-text">City Analytics</span>
+        </div>
+        <button id="sidebarToggleBtn" type="button" class="icon-btn-sm sidebar-toggle-btn" title="Toggle Sidebar">
+            <i data-lucide="panel-left-close"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">MAIN</div>
+
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}" data-nav-route="/dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{{ url_for('add_record') }}" class="nav-item {% if active_page == 'add_record' %}active{% endif %}" data-nav-route="/add-record">
+            <i data-lucide="plus-square"></i>
+            <span>Add Record</span>
+        </a>
+
+        <a href="{{ url_for('records') }}" class="nav-item {% if active_page == 'records' %}active{% endif %}" data-nav-route="/records">
+            <i data-lucide="table"></i>
+            <span>View Records</span>
+        </a>
+
+        <div class="nav-section">ACCOUNT</div>
+        <form action="{{ url_for('logout') }}" method="POST" class="sidebar-logout-form" data-no-transition="true">
+            <button type="submit" class="nav-item nav-item-button">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="support-card">
+                <i data-lucide="shield-check"></i>
+                <div>
+                    <h4>Secure Session</h4>
+                    <p>Authenticated</p>
+                </div>
+            </div>
+        </div>
+</aside>

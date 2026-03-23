@@ -1,0 +1,162 @@
+{% extends 'pages/base_app.html' %}
+
+{% block title %}Records{% endblock %}
+{% block page_title %}Service Records{% endblock %}
+{% block page_subtitle %}Browse and manage all submitted records{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_record') }}" class="btn primary-btn btn-icon">
+    <i data-lucide="plus"></i> Add Record
+</a>
+<a href="{{ url_for('dashboard') }}" class="btn secondary-btn btn-icon">
+    <i data-lucide="layout-dashboard"></i> Dashboard
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card table-card">
+    <div class="card-header">
+        <div class="card-title-group">
+            <span class="card-header-icon"><i data-lucide="table"></i></span>
+            <div>
+                <h3 class="card-title">All Records</h3>
+                <p class="card-subtitle">Full public service data inventory</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="records-toolbar">
+        <div class="search-box records-search">
+            <i data-lucide="search"></i>
+            <input id="recordsSearch" type="text" placeholder="Search by service, category, status...">
+        </div>
+
+        <div class="records-filters">
+            <select id="filterArea">
+                <option value="">All Areas</option>
+                {% for area in hyderabad_areas %}
+                <option value="{{ area }}">{{ area }}</option>
+                {% endfor %}
+            </select>
+
+            <select id="filterCategory">
+                <option value="">All Categories</option>
+                <option value="Health">Health</option>
+                <option value="Transport">Transport</option>
+                <option value="Finance">Finance</option>
+                <option value="Public Works">Public Works</option>
+                <option value="Education">Education</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <select id="filterStatus">
+                <option value="">All Statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Pending">Pending</option>
+                <option value="Blocked">Blocked</option>
+            </select>
+
+            <input id="filterDateFrom" type="date" title="From date">
+            <input id="filterDateTo" type="date" title="To date">
+
+            <button id="clearRecordFilters" type="button" class="btn secondary-btn btn-sm">Reset</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Service Name</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Total Requests</th>
+                    <th>Resolved</th>
+                    <th>Efficiency</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="recordsTableBody">
+                {% for service in services %}
+                <tr
+                    data-category="{{ service['department'] }}"
+                    data-status="{{ service['status'] or 'In Progress' }}"
+                    data-date="{{ service['request_date'] or '' }}"
+                    data-area="{{ service['area'] or '' }}"
+                >
+                    <td>
+                        <div class="flex-align">
+                            <span class="dept-dot {{ service['department'].lower().replace(' ', '-') }}"></span>
+                            <span class="font-medium">{{ service['department'] }}</span>
+                        </div>
+                    </td>
+                    <td>{{ service['service'] }}</td>
+                    <td>
+                        <div class="location-cell">
+                            <span class="font-medium">{{ service['area'] or 'Unspecified' }}</span>
+                            <span class="text-muted text-sm">{{ service['city'] or 'Hyderabad, Telangana' }}{% if service['landmark'] %} · {{ service['landmark'] }}{% endif %}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="kpi-badge">{{ service['status'] or 'In Progress' }}</span>
+                    </td>
+                    <td>{{ service['request_date'] or '—' }}</td>
+                    <td>{{ service['total_requests'] }}</td>
+                    <td>{{ service['resolved_requests'] }}</td>
+                    <td>
+                        {% set eff = (service['resolved_requests'] / service['total_requests'] * 100) if service['total_requests'] > 0 else 0 %}
+                        <div class="progress-cell">
+                            <span class="progress-text {% if eff > 80 %}text-success{% elif eff > 50 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ eff | round(0) | int }}%
+                            </span>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill {% if eff > 80 %}bg-success{% elif eff > 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ eff }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="rating-badge {% if service['satisfaction'] >= 4.0 %}high{% elif service['satisfaction'] >= 3.0 %}med{% else %}low{% endif %}">
+                            <i data-lucide="star" class="star-icon"></i> {{ service['satisfaction'] }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-cell">
+                            <a href="{{ url_for('edit_service', id=service['id']) }}" class="action-btn edit-btn" title="Edit"><i data-lucide="edit-3"></i></a>
+                            <form action="{{ url_for('delete_service', id=service['id']) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this record?');">
+                                <button type="submit" class="action-btn delete-btn" title="Delete"><i data-lucide="trash-2"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="noRecordsMessage" class="no-records-message" style="display:none;">
+        <i data-lucide="inbox"></i>
+        <span>No records match the current filters.</span>
+    </div>
+
+    <div class="table-footer">
+        <div class="table-meta">
+            <span id="recordsCountLabel">0 records</span>
+        </div>
+        <div class="pagination-controls">
+            <label for="pageSizeSelect" class="text-sm">Rows</label>
+            <select id="pageSizeSelect" class="page-size-select">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+            </select>
+            <button id="prevPageBtn" type="button" class="btn secondary-btn btn-sm">Prev</button>
+            <span id="pageInfo" class="page-info">Page 1 of 1</span>
+            <button id="nextPageBtn" type="button" class="btn secondary-btn btn-sm">Next</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

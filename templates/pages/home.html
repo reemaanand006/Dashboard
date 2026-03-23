@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Analytics Command Center</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="home-page">
+    <div class="home-bg-orb orb-one"></div>
+    <div class="home-bg-orb orb-two"></div>
+    <div class="home-bg-orb orb-three"></div>
+
+    <main class="home-shell reveal is-visible">
+        <section class="home-hero card">
+            <div class="home-hero-glow"></div>
+            <div class="home-hero-grid">
+                <div>
+                    <div class="home-status">
+                        <span class="status-indicator"></span>
+                        <span>Live Monitoring Active</span>
+                    </div>
+
+                    <h1 class="home-heading">
+                        City Analytics
+                        <span class="home-heading-accent">Command Center</span>
+                    </h1>
+                    <p class="home-subtitle">
+                        Public Service Performance Monitor — Track, analyze, and optimize city services using real-time data and actionable insights.
+                    </p>
+
+                    <div class="home-actions">
+                        <a class="btn primary-btn btn-icon home-primary-btn" href="{% if is_admin %}{{ url_for('dashboard') }}{% else %}{{ url_for('login', next=url_for('dashboard')) }}{% endif %}">
+                            <i data-lucide="layout-dashboard"></i>
+                            Open Dashboard
+                        </a>
+                        <a class="btn secondary-btn btn-icon" href="{% if is_admin %}{{ url_for('add_record') }}{% else %}{{ url_for('login', next=url_for('add_record')) }}{% endif %}">
+                            <i data-lucide="plus-square"></i>
+                            Add New Record
+                        </a>
+                        <a class="btn secondary-btn btn-icon" href="{% if is_admin %}{{ url_for('records') }}{% else %}{{ url_for('login', next=url_for('records')) }}{% endif %}">
+                            <i data-lucide="table"></i>
+                            View Records
+                        </a>
+                    </div>
+
+                    <div class="home-highlight-strip">
+                        <div class="home-highlight-pill">
+                            <i data-lucide="activity"></i>
+                            <span>24/7 Incident Tracking</span>
+                        </div>
+                        <div class="home-highlight-pill">
+                            <i data-lucide="map-pinned"></i>
+                            <span>20 Hyderabad Zones</span>
+                        </div>
+                        <div class="home-highlight-pill">
+                            <i data-lucide="clock-3"></i>
+                            <span>Average Resolution: 3.8h</span>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="home-live-panel">
+                    <h3>Live Snapshot</h3>
+                    <div class="home-live-metrics">
+                        <div class="home-live-metric">
+                            <span>Total Requests</span>
+                            <strong>12.4K</strong>
+                        </div>
+                        <div class="home-live-metric">
+                            <span>Completion Rate</span>
+                            <strong>91.8%</strong>
+                        </div>
+                        <div class="home-live-metric">
+                            <span>Avg Satisfaction</span>
+                            <strong>4.6/5</strong>
+                        </div>
+                    </div>
+                    <div class="home-live-bars">
+                        <div class="home-live-bar"><span style="width: 88%"></span></div>
+                        <div class="home-live-bar"><span style="width: 73%"></span></div>
+                        <div class="home-live-bar"><span style="width: 96%"></span></div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="home-feature-grid">
+            <article class="card home-feature-card">
+                <div class="card-title-group">
+                    <span class="card-header-icon"><i data-lucide="bar-chart-3"></i></span>
+                    <div>
+                        <h3 class="card-title">Real-time Analytics</h3>
+                    </div>
+                </div>
+                <p>Monitor service efficiency and performance.</p>
+                <div class="home-feature-indicator positive">
+                    <i data-lucide="arrow-up-right"></i>
+                    <span>Efficiency +18%</span>
+                </div>
+            </article>
+
+            <article class="card home-feature-card">
+                <div class="card-title-group">
+                    <span class="card-header-icon"><i data-lucide="users"></i></span>
+                    <div>
+                        <h3 class="card-title">Citizen Insights</h3>
+                    </div>
+                </div>
+                <p>Track satisfaction and identify issues.</p>
+                <div class="home-feature-indicator neutral">
+                    <i data-lucide="sparkline"></i>
+                    <span>Satisfaction 4.6/5</span>
+                </div>
+            </article>
+
+            <article class="card home-feature-card">
+                <div class="card-title-group">
+                    <span class="card-header-icon"><i data-lucide="triangle-alert"></i></span>
+                    <div>
+                        <h3 class="card-title">Smart Alerts</h3>
+                    </div>
+                </div>
+                <p>Automated alerts for critical service problems.</p>
+                <div class="home-feature-indicator warning">
+                    <i data-lucide="shield-alert"></i>
+                    <span>3 High Priority Alerts</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="home-ops-grid">
+            <article class="card home-ops-card">
+                <div class="card-title-group">
+                    <span class="card-header-icon"><i data-lucide="radar"></i></span>
+                    <div>
+                        <h3 class="card-title">Operational Focus</h3>
+                        <p class="card-subtitle">Current citywide readiness by function</p>
+                    </div>
+                </div>
+
+                <div class="home-ops-list">
+                    <div class="home-ops-item">
+                        <div class="home-ops-meta"><span>Emergency Health Response</span><strong>94%</strong></div>
+                        <div class="home-ops-track"><span style="width: 94%"></span></div>
+                    </div>
+                    <div class="home-ops-item">
+                        <div class="home-ops-meta"><span>Traffic & Mobility</span><strong>87%</strong></div>
+                        <div class="home-ops-track"><span style="width: 87%"></span></div>
+                    </div>
+                    <div class="home-ops-item">
+                        <div class="home-ops-meta"><span>Infrastructure Maintenance</span><strong>91%</strong></div>
+                        <div class="home-ops-track"><span style="width: 91%"></span></div>
+                    </div>
+                    <div class="home-ops-item">
+                        <div class="home-ops-meta"><span>Education Services</span><strong>89%</strong></div>
+                        <div class="home-ops-track"><span style="width: 89%"></span></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card home-journey-card">
+                <div class="card-title-group">
+                    <span class="card-header-icon"><i data-lucide="route"></i></span>
+                    <div>
+                        <h3 class="card-title">Response Workflow</h3>
+                        <p class="card-subtitle">Complaint lifecycle from intake to closure</p>
+                    </div>
+                </div>
+
+                <div class="home-journey-list">
+                    <div class="home-journey-step">
+                        <span class="home-journey-dot"></span>
+                        <div><strong>1. Intake & Categorization</strong><p>Complaint is tagged by category and service in seconds.</p></div>
+                    </div>
+                    <div class="home-journey-step">
+                        <span class="home-journey-dot"></span>
+                        <div><strong>2. Zone Assignment</strong><p>Automatically routed to the responsible Hyderabad area team.</p></div>
+                    </div>
+                    <div class="home-journey-step">
+                        <span class="home-journey-dot"></span>
+                        <div><strong>3. Action Tracking</strong><p>Status updates and turnaround metrics are monitored live.</p></div>
+                    </div>
+                    <div class="home-journey-step">
+                        <span class="home-journey-dot"></span>
+                        <div><strong>4. Closure & Review</strong><p>Resolution quality and citizen satisfaction are recorded.</p></div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="card home-cta-band">
+            <div>
+                <p class="home-cta-kicker">Command Center Ready</p>
+                <h3>Track every complaint category with precision.</h3>
+                <p>Use structured categories, service dropdowns, and status intelligence to keep response teams aligned.</p>
+            </div>
+            <div class="home-cta-actions">
+                <a class="btn primary-btn btn-icon" href="{% if is_admin %}{{ url_for('add_record') }}{% else %}{{ url_for('login', next=url_for('add_record')) }}{% endif %}">
+                    <i data-lucide="file-plus-2"></i>
+                    Create Complaint Record
+                </a>
+            </div>
+        </section>
+
+        <div class="home-auth-row">
+            {% if is_admin %}
+            <form method="POST" action="{{ url_for('logout') }}" data-no-transition="true">
+                <button type="submit" class="btn secondary-btn btn-icon"><i data-lucide="log-out"></i> Logout</button>
+            </form>
+            {% else %}
+            <a class="btn secondary-btn btn-icon" href="{{ url_for('login') }}"><i data-lucide="shield-check"></i> Admin Login</a>
+            {% endif %}
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

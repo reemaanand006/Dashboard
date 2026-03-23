@@ -1,0 +1,173 @@
+{% extends 'pages/base_app.html' %}
+
+{% block title %}Add Record{% endblock %}
+{% block page_title %}Add New Record{% endblock %}
+{% block page_subtitle %}Create and submit a professional service entry{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('records') }}" class="btn secondary-btn btn-icon">
+    <i data-lucide="table"></i> View Records
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card form-page-card">
+    <div class="card-header">
+        <div class="card-title-group">
+            <span class="card-header-icon"><i data-lucide="file-plus-2"></i></span>
+            <div>
+                <h3 class="card-title">Service Data Form</h3>
+                <p class="card-subtitle">Capture service, status, and timeline details</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-body">
+        <form id="addRecordForm" action="{{ url_for('add_record') }}" method="POST" class="modern-form" data-no-transition="true" novalidate>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="recordCategory">Category</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="layout-list"></i>
+                        <select id="recordCategory" name="category" required>
+                            <option value="" disabled {% if not form_data.get('category') %}selected{% endif %}>Select Category</option>
+                            {% for category in ['Health', 'Transport', 'Finance', 'Public Works', 'Education', 'Other'] %}
+                            <option value="{{ category }}" {% if form_data.get('category') == category %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="field-error" id="categoryError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordService">Service</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="briefcase-business"></i>
+                        {% set selected_service = form_data.get('name') or form_data.get('service') %}
+                        <select id="recordService" name="name" data-preselect="{{ selected_service or '' }}" required>
+                            <option value="" disabled {% if not selected_service %}selected{% endif %}>Select Service</option>
+                        </select>
+                    </div>
+                    <p class="field-error" id="serviceError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordStatus">Status</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="badge-check"></i>
+                        <select id="recordStatus" name="status" required>
+                            {% for status in ['In Progress', 'Completed', 'Pending', 'Blocked'] %}
+                            <option value="{{ status }}" {% if form_data.get('status', 'In Progress') == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="field-error" id="statusError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordCity">City</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="building-2"></i>
+                        <input id="recordCity" type="text" name="city" value="Hyderabad, Telangana" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordArea">Area</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="map-pin"></i>
+                        <select id="recordArea" name="area" required>
+                            <option value="" disabled {% if not form_data.get('area') %}selected{% endif %}>Select Area</option>
+                            {% for area in hyderabad_areas %}
+                            <option value="{{ area }}" {% if form_data.get('area') == area %}selected{% endif %}>{{ area }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="field-error" id="areaError"></p>
+                    <p class="text-muted text-sm">Pick the exact Hyderabad zone where the service was reported.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordDate">Record Date</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="calendar-days"></i>
+                        <input id="recordDate" type="date" name="date" value="{{ form_data.get('date', '') }}" required>
+                    </div>
+                    <p class="field-error" id="dateError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordTotal">Total Requests</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="file-input"></i>
+                        <input id="recordTotal" type="number" name="total_requests" min="0" value="{{ form_data.get('total_requests', '') }}" placeholder="0" required>
+                    </div>
+                    <p class="field-error" id="totalError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordResolved">Resolved Requests</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="check-square"></i>
+                        <input id="recordResolved" type="number" name="resolved_requests" min="0" value="{{ form_data.get('resolved_requests', '') }}" placeholder="0" required>
+                    </div>
+                    <p class="field-error" id="resolvedError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordTime">Avg Resolution Time (Hours)</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="clock"></i>
+                        <input id="recordTime" type="number" step="0.1" min="0" name="resolution_time" value="{{ form_data.get('resolution_time', '') }}" placeholder="0.0" required>
+                    </div>
+                    <p class="field-error" id="timeError"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="recordSatisfaction">Satisfaction (1-5)</label>
+                    <div class="input-with-icon">
+                        <i data-lucide="smile"></i>
+                        <input id="recordSatisfaction" type="number" step="0.1" min="1" max="5" name="satisfaction" value="{{ form_data.get('satisfaction', '') }}" placeholder="4.5" required>
+                    </div>
+                    <p class="field-error" id="satisfactionError"></p>
+                </div>
+            </div>
+
+            <div class="form-group form-full-width">
+                <label for="recordLandmark">Landmark (Optional)</label>
+                <div class="input-with-icon">
+                    <i data-lucide="map"></i>
+                    <input id="recordLandmark" type="text" name="landmark" value="{{ form_data.get('landmark', '') }}" placeholder="e.g. Ameerpet Metro Station" list="hyderabadLandmarkHints">
+                </div>
+                <datalist id="hyderabadLandmarkHints">
+                    <option value="Ameerpet Metro Station"></option>
+                    <option value="Care Hospitals, Road No. 1"></option>
+                    <option value="Charminar Circle"></option>
+                    <option value="Cyber Towers Junction"></option>
+                    <option value="GHMC Circle Office"></option>
+                    <option value="Gandhi Hospital"></option>
+                    <option value="Hussain Sagar Tank Bund"></option>
+                    <option value="JNTU Junction"></option>
+                    <option value="LB Nagar Metro Station"></option>
+                    <option value="Nampally Station Road"></option>
+                    <option value="Raj Bhavan Road Junction"></option>
+                    <option value="Survey of India Campus Road"></option>
+                </datalist>
+            </div>
+
+            <div class="form-group form-full-width">
+                <label for="recordNotes">Notes (Optional)</label>
+                <textarea id="recordNotes" name="notes" rows="3" placeholder="Add contextual details for this record...">{{ form_data.get('notes', '') }}</textarea>
+            </div>
+
+            <div class="modal-footer form-page-footer">
+                <a href="{{ url_for('records') }}" class="btn secondary-btn">Cancel</a>
+                <button id="addRecordSubmitBtn" type="submit" class="btn primary-btn btn-icon add-record-submit-btn">
+                    <i data-lucide="loader-2" class="add-record-spinner"></i>
+                    <span class="add-record-btn-text">Save Record</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

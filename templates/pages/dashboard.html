@@ -1,0 +1,170 @@
+{% extends 'pages/base_app.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+{% block page_subtitle %}Operational pulse across departments{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_record') }}" class="btn primary-btn btn-icon">
+    <i data-lucide="plus"></i> Add Record
+</a>
+<a href="{{ url_for('records') }}" class="btn secondary-btn btn-icon">
+    <i data-lucide="table"></i> View Records
+</a>
+<button id="refreshBtn" class="icon-btn" title="Refresh Data">
+    <i data-lucide="refresh-cw"></i>
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="content-header reveal">
+    <div>
+        <h3 class="section-title">Performance Metrics</h3>
+        <p class="section-subtitle">Real-time overview of public service operations</p>
+    </div>
+</div>
+
+<div id="criticalAlerts" class="alert-banner" style="display: none;">
+    <div class="alert-icon-wrap"><i data-lucide="alert-triangle"></i></div>
+    <div class="alert-content">
+        <strong>System Alerts:</strong> <span id="alertText"></span>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon-box bg-blue-100 text-blue-600">
+            <i data-lucide="file-text"></i>
+        </div>
+        <div class="kpi-details">
+            <div class="kpi-label">Total Requests</div>
+            <div class="kpi-value" id="kpiTotalRequests">--</div>
+            <div class="kpi-trend" id="kpiTrendTotal">--</div>
+        </div>
+        <span class="kpi-badge"><i data-lucide="activity"></i> Live</span>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-box bg-green-100 text-green-600">
+            <i data-lucide="check-circle-2"></i>
+        </div>
+        <div class="kpi-details">
+            <div class="kpi-label">Completed</div>
+            <div class="kpi-value" id="kpiCompleted">--</div>
+            <div class="kpi-trend" id="kpiTrendCompleted">--</div>
+        </div>
+        <span class="kpi-badge"><i data-lucide="trending-up"></i> Stable</span>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-box bg-orange-100 text-orange-600">
+            <i data-lucide="clock"></i>
+        </div>
+        <div class="kpi-details">
+            <div class="kpi-label">Pending</div>
+            <div class="kpi-value" id="kpiPending">--</div>
+            <div class="kpi-trend" id="kpiTrendPending">--</div>
+        </div>
+        <span class="kpi-badge"><i data-lucide="timer"></i> Queue</span>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-box bg-purple-100 text-purple-600">
+            <i data-lucide="sparkles"></i>
+        </div>
+        <div class="kpi-details">
+            <div class="kpi-label">Performance</div>
+            <div class="kpi-value" id="kpiPerformance">--%</div>
+            <div class="kpi-trend" id="kpiTrendPerformance">--</div>
+        </div>
+        <span class="kpi-badge"><i data-lucide="award"></i> Quality</span>
+    </div>
+</div>
+
+<div class="charts-grid-row">
+    <div class="card chart-card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <span class="card-header-icon"><i data-lucide="bar-chart-3"></i></span>
+                <div>
+                    <h3 class="card-title">Service Performance</h3>
+                    <p class="card-subtitle">Requests vs completion by service</p>
+                </div>
+            </div>
+            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="servicePerformanceChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <span class="card-header-icon"><i data-lucide="chart-line"></i></span>
+                <div>
+                    <h3 class="card-title">Monthly Trends</h3>
+                    <p class="card-subtitle">Request and completion trendline</p>
+                </div>
+            </div>
+            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="monthlyTrendChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <span class="card-header-icon"><i data-lucide="map-pinned"></i></span>
+                <div>
+                    <h3 class="card-title">Area Distribution</h3>
+                    <p class="card-subtitle">Request share across Hyderabad zones</p>
+                </div>
+            </div>
+            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="chart-wrapper area-distribution-wrapper">
+            <div id="areaMap" class="area-map" aria-label="Hyderabad Area Service Intensity Map"></div>
+            <canvas id="categoryPieChart"></canvas>
+            <div id="areaMapLegend" class="area-map-legend"></div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid-row secondary-grid">
+    <div class="card chart-card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <span class="card-header-icon"><i data-lucide="gauge-circle"></i></span>
+                <div>
+                    <h3 class="card-title">Department Efficiency</h3>
+                    <p class="card-subtitle">Resolution efficiency by department</p>
+                </div>
+            </div>
+            <button class="icon-btn-sm"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="departmentEfficiencyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card insights-card">
+        <div class="card-header">
+            <div class="card-title-group">
+                <span class="card-header-icon"><i data-lucide="sparkles"></i></span>
+                <div>
+                    <h3 class="card-title">Operational Highlights</h3>
+                    <p class="card-subtitle">Live summary of key performance signals</p>
+                </div>
+            </div>
+        </div>
+        <div class="insights-body">
+            <ul id="dashboardHighlights" class="insights-list">
+                <li class="insight-item">Loading insights...</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
